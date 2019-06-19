@@ -38,9 +38,10 @@ namespace DeveRecupDirSorter
 
             var foundRecupFiles = new List<RecupFile>();
 
+            var lastNumber = recupDirs.LastOrDefault()?.Number;
             foreach (var recupDir in recupDirs)
             {
-                Console.WriteLine($"Processing {recupDir.RecupDirName}");
+                Console.WriteLine($"Processing {recupDir.RecupDirName} / {lastNumber}");
 
                 foreach (var file in Directory.GetFiles(recupDir.RecupDirPath))
                 {
@@ -58,7 +59,7 @@ namespace DeveRecupDirSorter
             tableContent.Add(new List<string>() { "Extension", "Count", "Total size" });
             tableContent.Add(null);
 
-            var groups = recupFiles.GroupBy(t => t.Extension).OrderBy(t => t.Count());
+            var groups = recupFiles.GroupBy(t => t.Extension).OrderByDescending(t => t.Sum(z => z.Size));
 
             foreach (var group in groups)
             {
@@ -70,7 +71,8 @@ namespace DeveRecupDirSorter
                 });
             }
 
-            TableToTextPrinter.TableToText(tableContent);
+            var str = TableToTextPrinter.TableToText(tableContent);
+            Console.WriteLine(str);
         }
 
         public void SortRecupFiles(List<RecupFile> recupFiles)

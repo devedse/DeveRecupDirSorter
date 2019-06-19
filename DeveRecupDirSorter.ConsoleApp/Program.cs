@@ -10,6 +10,7 @@ namespace DeveRecupDirSorter.ConsoleApp
 
             var recupDirSorter = new RecupDirSorter(rootPath);
             var recupFiles = recupDirSorter.FindFiles();
+            Console.WriteLine();
             recupDirSorter.ShowRecupFilesDetails(recupFiles);
 
             Console.WriteLine($"Done, press enter to exit");
