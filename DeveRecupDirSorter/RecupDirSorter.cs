@@ -39,15 +39,32 @@ namespace DeveRecupDirSorter
             var foundRecupFiles = new List<RecupFile>();
 
             var lastNumber = recupDirs.LastOrDefault()?.Number;
+            int totCount = 0;
+            long totSize = 0;
             foreach (var recupDir in recupDirs)
             {
-                Console.WriteLine($"Processing {recupDir.RecupDirName} / {lastNumber}");
+                var toPrint = $"Processing {recupDir.RecupDirName} / {lastNumber}";
+                Console.Write(toPrint);
 
+                int count = 0;
+                long size = 0;
                 foreach (var file in Directory.GetFiles(recupDir.RecupDirPath))
                 {
                     var recupFile = new RecupFile(RootRecupDir, file);
                     foundRecupFiles.Add(recupFile);
+                    count++;
+                    size += recupFile.Size;
                 }
+
+                var padding = "".PadRight(Math.Max(1, 40 - toPrint.Length));
+                var toPrint2 = $"{padding}(Count: {count}, Size: {ValuesToStringHelper.BytesToString(size)})";
+                Console.Write(toPrint2);
+
+                totCount += count;
+                totSize += size;
+
+                var padding2 = "".PadRight(Math.Max(1, 72 - (toPrint2.Length + toPrint.Length)));
+                Console.WriteLine($"{padding2}(Total count: {totCount}, Total size: {ValuesToStringHelper.BytesToString(totSize)})");
             }
 
             return foundRecupFiles;
@@ -67,9 +84,12 @@ namespace DeveRecupDirSorter
                 {
                     group.Key,
                     group.Count().ToString(),
-                    ValuesToStringHelper.BytesToString( group.Sum(t => t.Size))
+                    ValuesToStringHelper.BytesToString(group.Sum(t => t.Size))
                 });
             }
+
+            tableContent.Add(null);
+            tableContent.Add(new List<string>() { "Total:", recupFiles.Count.ToString(), ValuesToStringHelper.BytesToString(recupFiles.Sum(t => t.Size)) });
 
             var str = TableToTextPrinter.TableToText(tableContent);
             Console.WriteLine(str);
