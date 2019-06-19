@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DeveCoolLib.Conversion;
+using DeveCoolLib.TextFormatting;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +30,7 @@ namespace DeveRecupDirSorter
             return recupDirs;
         }
 
-        public void FindFiles()
+        public List<RecupFile> FindFiles()
         {
             Console.WriteLine($"Handling root directory: {RootRecupDir}");
 
@@ -47,6 +49,32 @@ namespace DeveRecupDirSorter
                 }
             }
 
+            return foundRecupFiles;
+        }
+
+        public void ShowRecupFilesDetails(List<RecupFile> recupFiles)
+        {
+            var tableContent = new List<List<string>>();
+            tableContent.Add(new List<string>() { "Extension", "Count", "Total size" });
+            tableContent.Add(null);
+
+            var groups = recupFiles.GroupBy(t => t.Extension).OrderBy(t => t.Count());
+
+            foreach (var group in groups)
+            {
+                tableContent.Add(new List<string>()
+                {
+                    group.Key,
+                    group.Count().ToString(),
+                    ValuesToStringHelper.BytesToString( group.Sum(t => t.Size))
+                });
+            }
+
+            TableToTextPrinter.TableToText(tableContent);
+        }
+
+        public void SortRecupFiles(List<RecupFile> recupFiles)
+        {
 
         }
     }

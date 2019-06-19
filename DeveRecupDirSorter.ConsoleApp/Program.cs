@@ -9,7 +9,8 @@ namespace DeveRecupDirSorter.ConsoleApp
             var rootPath = @"\\devenology\BackupsOthers\BackupRobinAsusLaptop";
 
             var recupDirSorter = new RecupDirSorter(rootPath);
-            recupDirSorter.FindFiles();
+            var recupFiles = recupDirSorter.FindFiles();
+            recupDirSorter.ShowRecupFilesDetails(recupFiles);
 
             Console.WriteLine($"Done, press enter to exit");
             Console.ReadLine();
