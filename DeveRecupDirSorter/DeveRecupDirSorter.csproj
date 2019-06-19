@@ -16,4 +16,8 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DeveCoolLib" Version="1.0.9" />
+  </ItemGroup>
+
 </Project>

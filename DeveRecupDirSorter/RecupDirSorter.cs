@@ -46,6 +46,8 @@ namespace DeveRecupDirSorter
                     foundRecupFiles.Add(recupFile);
                 }
             }
+
+
         }
     }
 }
