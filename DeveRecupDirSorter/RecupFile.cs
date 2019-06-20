@@ -41,32 +41,39 @@ namespace DeveRecupDirSorter
 
         private DateTime? FindDateTime()
         {
-            var imageFile = ImageFile.FromFile(FilePath);
-
-            ExifProperty exifProperty;
-
-            exifProperty = imageFile.Properties.FirstOrDefault(t => t.Tag == ExifTag.DateTime);
-            if (exifProperty != null)
+            try
             {
-                return (DateTime)exifProperty.Value;
+                var imageFile = ImageFile.FromFile(FilePath);
+
+                ExifProperty exifProperty;
+
+                exifProperty = imageFile.Properties.FirstOrDefault(t => t.Tag == ExifTag.DateTime);
+                if (exifProperty != null)
+                {
+                    return (DateTime)exifProperty.Value;
+                }
+
+                exifProperty = imageFile.Properties.FirstOrDefault(t => t.Tag == ExifTag.DateTimeOriginal);
+                if (exifProperty != null)
+                {
+                    return (DateTime)exifProperty.Value;
+                }
+
+                exifProperty = imageFile.Properties.FirstOrDefault(t => t.Tag == ExifTag.DateTimeDigitized);
+                if (exifProperty != null)
+                {
+                    return (DateTime)exifProperty.Value;
+                }
+
+                exifProperty = imageFile.Properties.FirstOrDefault(t => t.Tag == ExifTag.ThumbnailDateTime);
+                if (exifProperty != null)
+                {
+                    return (DateTime)exifProperty.Value;
+                }
             }
-
-            exifProperty = imageFile.Properties.FirstOrDefault(t => t.Tag == ExifTag.DateTimeOriginal);
-            if (exifProperty != null)
+            catch (Exception)
             {
-                return (DateTime)exifProperty.Value;
-            }
 
-            exifProperty = imageFile.Properties.FirstOrDefault(t => t.Tag == ExifTag.DateTimeDigitized);
-            if (exifProperty != null)
-            {
-                return (DateTime)exifProperty.Value;
-            }
-
-            exifProperty = imageFile.Properties.FirstOrDefault(t => t.Tag == ExifTag.ThumbnailDateTime);
-            if (exifProperty != null)
-            {
-                return (DateTime)exifProperty.Value;
             }
 
             return null;
