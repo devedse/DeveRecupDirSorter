@@ -6,6 +6,14 @@ namespace DeveRecupDirSorter.Helpers
     {
         public static string MakeRelativePath(string rootFullPath, string relativeFullPath)
         {
+            rootFullPath = rootFullPath.Replace("/", "\\");
+            relativeFullPath = relativeFullPath.Replace("/", "\\");
+
+            if (!rootFullPath.EndsWith(@"\\"))
+            {
+                rootFullPath += @"\";
+            }
+
             var relativeFullUri = new Uri(relativeFullPath);
             var rootFullUri = new Uri(rootFullPath);
 

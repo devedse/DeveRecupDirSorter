@@ -1,5 +1,6 @@
 ﻿using DeveCoolLib.Conversion;
 using DeveCoolLib.TextFormatting;
+using DeveRecupDirSorter.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,11 +12,17 @@ namespace DeveRecupDirSorter
 {
     public class RecupDirSorter
     {
-        public string RootRecupDir { get; }
+        public static readonly Regex DigitOnlyRegex = new Regex(@"^(\d*)$", RegexOptions.Compiled);
 
-        public RecupDirSorter(string rootRecupDirPath)
+        public string RootRecupDir { get; }
+        public FileActionType FileActionType { get; }
+        public int MaxFilesPerSortedDir { get; }
+
+        public RecupDirSorter(string rootRecupDirPath, FileActionType fileActionType, int maxFilesPerSortedDir = 500)
         {
             RootRecupDir = rootRecupDirPath;
+            FileActionType = fileActionType;
+            MaxFilesPerSortedDir = maxFilesPerSortedDir;
         }
 
         private IEnumerable<RecupDir> GetRecupDirs(string rootDir)
@@ -97,7 +104,90 @@ namespace DeveRecupDirSorter
 
         public void SortRecupFiles(List<RecupFile> recupFiles)
         {
+            var outputDirPath = Path.Combine(RootRecupDir, "Output");
+            Directory.CreateDirectory(outputDirPath);
 
+            var groups = recupFiles.GroupBy(t => t.Extension).OrderByDescending(t => t.Sum(z => z.Size));
+
+            foreach (var group in groups)
+            {
+                var extensionWithoutDot = group.Key.Replace(".", "");
+                var groupOutputDirPath = Path.Combine(outputDirPath, extensionWithoutDot);
+
+                Directory.CreateDirectory(groupOutputDirPath);
+
+                Console.WriteLine($"Handling extension: {extensionWithoutDot} with {group.Count()} files");
+                Console.WriteLine($"\tObtaining existing files...");
+                var existingFiles = new HashSet<string>(DirectoryHelper.FindAllFileNamesInDirectory(groupOutputDirPath).ToList());
+
+                Console.WriteLine($"\tFound {existingFiles.Count} existing files");
+
+                foreach (var file in group)
+                {
+                    if (!existingFiles.Contains(file.DesiredFileName.Value))
+                    {
+                        CopyFileToDest(groupOutputDirPath, file);
+
+
+                        existingFiles.Add(file.DesiredFileName.Value);
+                        Console.Write('#');
+                    }
+                    else
+                    {
+                        Console.Write('$');
+                    }
+                }
+                Console.WriteLine();
+                Console.WriteLine("\tDone");
+            }
+        }
+
+        private void CopyFileToDest(string outputDirPath, RecupFile file)
+        {
+            var numberedDirectories = Directory.GetDirectories(outputDirPath)
+                                            .Where(t => Directory.Exists(t))
+                                            .Select(t => Path.GetFileName(t))
+                                            .Where(t => DigitOnlyRegex.IsMatch(t))
+                                            .Select(t => int.Parse(t))
+                                            .OrderBy(t => t)
+                                            .ToList();
+
+
+            string desiredDirectoryName = "0";
+
+            var desiredDirNameForThisFile = file.DesiredDirName.Value;
+            if (desiredDirNameForThisFile != null)
+            {
+                desiredDirectoryName = desiredDirNameForThisFile;
+            }
+            else if (numberedDirectories.Any())
+            {
+                var lastDir = Path.Combine(outputDirPath, numberedDirectories.Last().ToString());
+                var filesHere = Directory.GetFiles(lastDir);
+                if (filesHere.Length >= 500)
+                {
+                    desiredDirectoryName = (numberedDirectories.Last() + 1).ToString();
+                }
+                else
+                {
+                    desiredDirectoryName = numberedDirectories.Last().ToString();
+                }
+            }
+
+            var destDirPath = Path.Combine(outputDirPath, desiredDirectoryName);
+            Directory.CreateDirectory(destDirPath);
+
+            var sourceFilePath = Path.Combine(RootRecupDir, file.RelativePath);
+            var destFilePath = Path.Combine(destDirPath, file.DesiredFileName.Value);
+
+            if (FileActionType == FileActionType.Copy)
+            {
+                File.Copy(sourceFilePath, destFilePath);
+            }
+            else if (FileActionType == FileActionType.Move)
+            {
+                File.Move(sourceFilePath, destFilePath);
+            }
         }
     }
 }

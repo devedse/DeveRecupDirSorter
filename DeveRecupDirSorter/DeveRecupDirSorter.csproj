@@ -17,7 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeveCoolLib" Version="1.0.9" />
+    <PackageReference Include="DeveCoolLib" Version="1.0.11" />
+    <PackageReference Include="ExifLibNet" Version="1.2.34" />
   </ItemGroup>
 
 </Project>
