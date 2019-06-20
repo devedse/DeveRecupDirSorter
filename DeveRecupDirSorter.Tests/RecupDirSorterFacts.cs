@@ -9,7 +9,7 @@ namespace DeveRecupDirSorter.Tests
         public void ConstructorWorks()
         {
             //Arrange
-            var recupDirSorter = new RecupDirSorter(@"C:\Test");
+            var recupDirSorter = new RecupDirSorter(@"C:\Test", FileActionType.Copy);
 
             //Act
 
